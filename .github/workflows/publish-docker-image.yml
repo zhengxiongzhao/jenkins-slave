@@ -3,7 +3,7 @@ name: Publish Docker image to Docker Hub
 on:
   push:
     branches:
-      - main # 或者您的主分支名称，例如 master
+      - master # 或者您的主分支名称，例如 main
   # 也可以在创建标签时触发
   # release:
   #   types: [published]
