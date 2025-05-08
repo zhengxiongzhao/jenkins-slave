@@ -10,8 +10,8 @@ ARG JDK_VERSION=8u452-b09 # Updated JDK version
 ARG JDK_URL=https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u452-b09/OpenJDK8U-jdk_x64_linux_hotspot_8u452b09.tar.gz
 
 ARG MVND_VERSION=1.0.2
-ARG MVND_CHECKSUM=1f061c3d038150000e31791694149a1b79485899819057a3145903378a2f811a
-ARG MVND_URL=https://github.com/apache/maven-mvnd/releases/download/${MVND_VERSION}/mvnd-${MVND_VERSION}-linux-amd64.tar.gz
+# ARG MVND_CHECKSUM has been removed as per user request to not check mvnd checksum.
+ARG MVND_URL=https://github.com/apache/maven-mvnd/releases/download/${MVND_VERSION}/maven-mvnd-${MVND_VERSION}-linux-amd64.tar.gz
 
 # ENV JAVA_HOME is inherited from base image (JDK 17)
 ENV JDK8_HOME=/opt/jdk-1.8
@@ -49,8 +49,7 @@ RUN set -eux; \
     echo "Installing Apache mvnd ${MVND_VERSION} to /opt/mvnd..."; \
     mkdir -p /opt/mvnd; \
     wget -q -O /tmp/mvnd.tar.gz ${MVND_URL}; \
-    echo "Verifying mvnd checksum (${MVND_CHECKSUM})..."; \
-    echo "${MVND_CHECKSUM}  /tmp/mvnd.tar.gz" | sha256sum -c -; \
+    # mvnd checksum verification has been removed as per user request.
     tar -xzf /tmp/mvnd.tar.gz -C /opt/mvnd --strip-components=1; \
     rm -f /tmp/mvnd.tar.gz; \
     echo "Verifying mvnd installation (mvnd --version):"; \
