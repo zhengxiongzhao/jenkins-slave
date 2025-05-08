@@ -13,10 +13,13 @@ ARG MVND_VERSION=1.0.2
 ARG MVND_CHECKSUM=1f061c3d038150000e31791694149a1b79485899819057a3145903378a2f811a
 ARG MVND_URL=https://github.com/apache/maven-mvnd/releases/download/${MVND_VERSION}/mvnd-${MVND_VERSION}-linux-amd64.tar.gz
 
-ENV JAVA_HOME=/opt/java
-ENV PATH=$JAVA_HOME/bin:/opt/mvnd/bin:$PATH
+# ENV JAVA_HOME is inherited from base image (JDK 17)
+ENV JDK8_HOME=/opt/jdk-1.8
+# Add mvnd to PATH
+ENV PATH=/opt/mvnd/bin:$PATH
 
 # 安装必要的工具 (wget, tar, etc.)
+# This layer installs tools required for downloading and extracting JDK and mvnd.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
     tar \
@@ -24,29 +27,35 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# 安装 Adoptium JDK 1.8
+# 安装 Adoptium JDK 1.8 和 Apache mvnd
+# This single RUN command installs both JDK 8 and mvnd to reduce image layers.
 RUN set -eux; \
-    mkdir -p /opt/java; \
-    wget -O /tmp/openjdk.tar.gz ${JDK_URL}; \
-    echo "${JDK_CHECKSUM} /tmp/openjdk.tar.gz" | sha256sum -c -; \
-    tar -xzf /tmp/openjdk.tar.gz -C /opt/java --strip-components=1; \
+    # --- JDK 1.8 Installation ---
+    echo "Installing Adoptium JDK ${JDK_VERSION} to ${JDK8_HOME}..."; \
+    mkdir -p ${JDK8_HOME}; \
+    wget -q -O /tmp/openjdk.tar.gz ${JDK_URL}; \
+    echo "Verifying JDK 8 checksum (${JDK_CHECKSUM})..."; \
+    echo "${JDK_CHECKSUM}  /tmp/openjdk.tar.gz" | sha256sum -c -; \
+    tar -xzf /tmp/openjdk.tar.gz -C ${JDK8_HOME} --strip-components=1; \
     rm -f /tmp/openjdk.tar.gz; \
-    # 确保 java 命令可用
-    update-alternatives --install /usr/bin/java java ${JAVA_HOME}/bin/java 100; \
-    update-alternatives --install /usr/bin/javac javac ${JAVA_HOME}/bin/javac 100; \
-    # 验证安装
-    java -version; \
-    javac -version
-
-# 安装 mvnd
-RUN set -eux; \
+    echo "Ensuring JDK 8 binaries are executable..."; \
+    chmod +x ${JDK8_HOME}/bin/java ${JDK8_HOME}/bin/javac; \
+    echo "Verifying JDK 8 installation (${JDK8_HOME}/bin/java -version):"; \
+    ${JDK8_HOME}/bin/java -version; \
+    ${JDK8_HOME}/bin/javac -version; \
+    echo "JDK 1.8 installation complete."; \
+    \
+    # --- Apache mvnd Installation ---
+    echo "Installing Apache mvnd ${MVND_VERSION} to /opt/mvnd..."; \
     mkdir -p /opt/mvnd; \
-    wget -O /tmp/mvnd.tar.gz ${MVND_URL}; \
-    echo "${MVND_CHECKSUM} /tmp/mvnd.tar.gz" | sha256sum -c -; \
+    wget -q -O /tmp/mvnd.tar.gz ${MVND_URL}; \
+    echo "Verifying mvnd checksum (${MVND_CHECKSUM})..."; \
+    echo "${MVND_CHECKSUM}  /tmp/mvnd.tar.gz" | sha256sum -c -; \
     tar -xzf /tmp/mvnd.tar.gz -C /opt/mvnd --strip-components=1; \
     rm -f /tmp/mvnd.tar.gz; \
-    # 验证安装
-    mvnd --version
+    echo "Verifying mvnd installation (mvnd --version):"; \
+    mvnd --version; \
+    echo "mvnd installation complete."
 
 # 切换回 jenkins 用户
 USER jenkins
@@ -55,5 +64,6 @@ USER jenkins
 RUN echo "Java version:" && java -version && \
     echo "javac version:" && javac -version && \
     echo "mvnd version:" && mvnd --version && \
-    echo "JAVA_HOME: ${JAVA_HOME}" && \
+    echo "Default JAVA_HOME (from base image): ${JAVA_HOME}" && \
+    echo "JDK8_HOME: ${JDK8_HOME}" && \
     echo "PATH: ${PATH}"
