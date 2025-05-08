@@ -13,7 +13,7 @@ ARG MVND_VERSION=1.0.2
 ARG MVND_CHECKSUM=1f061c3d038150000e31791694149a1b79485899819057a3145903378a2f811a
 ARG MVND_URL=https://github.com/apache/maven-mvnd/releases/download/${MVND_VERSION}/mvnd-${MVND_VERSION}-linux-amd64.tar.gz
 
-ENV JAVA_HOME=/opt/java/openjdk
+ENV JAVA_HOME=/opt/java
 ENV PATH=$JAVA_HOME/bin:/opt/mvnd/bin:$PATH
 
 # 安装必要的工具 (wget, tar, etc.)
