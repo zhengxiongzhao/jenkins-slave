@@ -5,9 +5,9 @@ FROM jenkins/inbound-agent:latest-jdk17 AS base
 USER root
 
 # 定义 JDK 和 mvnd 版本及下载 URL
-ARG JDK_VERSION=8u412-b08
-ARG JDK_CHECKSUM=f6cb00580df239389097c8990923916b21610ff10e21a79140760a0170000607
-ARG JDK_URL=https://github.com/adoptium/temurin8-binaries/releases/download/jdk${JDK_VERSION}/OpenJDK8U-jdk_x64_linux_hotspot_${JDK_VERSION}.tar.gz
+ARG JDK_VERSION=8u452-b09 # Updated JDK version
+# ARG JDK_CHECKSUM has been removed as per user request to not check JDK checksum.
+ARG JDK_URL=https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u452-b09/OpenJDK8U-jdk_x64_linux_hotspot_8u452b09.tar.gz
 
 ARG MVND_VERSION=1.0.2
 ARG MVND_CHECKSUM=1f061c3d038150000e31791694149a1b79485899819057a3145903378a2f811a
@@ -29,27 +29,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # 安装 Adoptium JDK 1.8
 RUN set -eux; \
-    echo "Installing Adoptium JDK ${JDK_VERSION} to ${JDK8_HOME}..."; \
+    echo "Installing Adoptium JDK ${JDK_VERSION} from ${JDK_URL} to ${JDK8_HOME}..."; \
     mkdir -p ${JDK8_HOME}; \
     wget -q -O /tmp/openjdk.tar.gz ${JDK_URL}; \
-    echo "Verifying JDK 8 checksum (${JDK_CHECKSUM})..."; \
-    echo "${JDK_CHECKSUM}  /tmp/openjdk.tar.gz" | sha256sum -c -; \
-    echo "Extracting JDK 8 to ${JDK8_HOME}..."; \
+    # JDK checksum verification has been removed as per user request.
+    echo "Extracting JDK to ${JDK8_HOME}..."; \
     tar -xzf /tmp/openjdk.tar.gz -C ${JDK8_HOME} --strip-components=1; \
     rm -f /tmp/openjdk.tar.gz; \
-    echo "Listing contents of ${JDK8_HOME}/bin:"; \
-    ls -lA ${JDK8_HOME}/bin; \
-    echo "Checking file type of ${JDK8_HOME}/bin/java:"; \
-    file ${JDK8_HOME}/bin/java; \
-    echo "Checking file type of ${JDK8_HOME}/bin/javac:"; \
-    file ${JDK8_HOME}/bin/javac; \
-    echo "Ensuring JDK 8 binaries are executable..."; \
+    echo "Ensuring JDK binaries in ${JDK8_HOME}/bin are executable..."; \
     chmod +x ${JDK8_HOME}/bin/java ${JDK8_HOME}/bin/javac; \
-    echo "Verifying JDK 8 installation (${JDK8_HOME}/bin/java -version):"; \
+    echo "Verifying JDK installation (${JDK8_HOME}/bin/java -version):"; \
     ${JDK8_HOME}/bin/java -version; \
-    echo "Verifying JDK 8 javac installation (${JDK8_HOME}/bin/javac -version):"; \
+    echo "Verifying JDK compiler installation (${JDK8_HOME}/bin/javac -version):"; \
     ${JDK8_HOME}/bin/javac -version; \
-    echo "JDK 1.8 installation complete."
+    echo "Adoptium JDK ${JDK_VERSION} installation complete."
 
 # 安装 Apache mvnd
 RUN set -eux; \
