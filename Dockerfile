@@ -105,7 +105,7 @@ RUN echo "Java version:" && java -version && \
     echo "javac version:" && javac -version && \
     echo "mvnd version:" && mvnd --version && \
     echo "docker version:" && docker --version && \
-    echo "kubectl version:" &&  kubectl --version && \
+    echo "kubectl version:" &&  kubectl version --client && \
     echo "Default JAVA_HOME (from base image): ${JAVA_HOME}" && \
     echo "JDK8_HOME: ${JDK8_HOME}" && \
     echo "PATH: ${PATH}"
