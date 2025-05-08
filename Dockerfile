@@ -18,7 +18,7 @@ ENV JDK8_HOME=/opt/jdk-1.8
 # Add mvnd to PATH
 ENV PATH=/opt/mvnd/bin:$PATH
 
-ENV KUBECTL_VERSION=v1.14.5
+ENV KUBECTL_VERSION=v1.18.20
 
 # 安装必要的工具 (wget, tar, etc.)
 # This layer installs tools required for downloading and extracting JDK and mvnd.
@@ -27,18 +27,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     tar \
     gzip \
     ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+    apt-transport-https curl software-properties-common 
 
-
-RUN echo "deb http://mirrors.163.com/debian/ stretch main" > /etc/apt/sources.list && \
-    echo "deb http://mirrors.163.com/debian/ stretch-updates main non-free contrib" >> /etc/apt/sources.list && \
-    echo "deb http://mirrors.163.com/debian-security/ stretch/updates main non-free contrib" >> /etc/apt/sources.list
-RUN apt-get update && \
-    apt-get -y install apt-transport-https ca-certificates curl software-properties-common && \
-    curl -fsSL http://mirrors.aliyun.com/docker-ce/linux/debian/gpg | apt-key add - && \
+# Install Docker CE (ensure this is compatible with Debian Bullseye)
+RUN curl -fsSL http://mirrors.aliyun.com/docker-ce/linux/debian/gpg | apt-key add - && \
     add-apt-repository "deb [arch=amd64] http://mirrors.aliyun.com/docker-ce/linux/debian $(lsb_release -cs) stable" && \
     apt-get -y update && \
-    apt-get -y install docker-ce
+    apt-get -y install docker-ce \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install kubectl
 RUN curl -L https://www.cnrancher.com/download/kubernetes/linux-amd64-${KUBECTL_VERSION}-kubectl -o /usr/local/bin/kubectl \
     && chmod +x /usr/local/bin/kubectl
 
@@ -95,6 +93,8 @@ RUN mkdir -p /home/jenkins/.m2 && \
 RUN echo "Java version:" && java -version && \
     echo "javac version:" && javac -version && \
     echo "mvnd version:" && mvnd --version && \
+    echo "docker version:" && docker --version && \
+    echo "kubectl version:" &&  kubectl --version && \
     echo "Default JAVA_HOME (from base image): ${JAVA_HOME}" && \
     echo "JDK8_HOME: ${JDK8_HOME}" && \
     echo "PATH: ${PATH}"
