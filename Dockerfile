@@ -58,6 +58,23 @@ RUN set -eux; \
 
 # 切换回 jenkins 用户
 USER jenkins
+# Configure Maven settings.xml for Aliyun mirror for the jenkins user
+RUN mkdir -p /home/jenkins/.m2 && \
+    printf '%s\n' \
+    '<settings xmlns="http://maven.apache.org/SETTINGS/1.2.0"' \
+    '          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"' \
+    '          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.2.0 https://maven.apache.org/xsd/settings-1.2.0.xsd">' \
+    '  <localRepository>/home/jenkins/.m2/repository</localRepository>' \
+    '  <mirrors>' \
+    '    <mirror>' \
+    '      <id>aliyunmaven</id>' \
+    '      <mirrorOf>*</mirrorOf>' \
+    '      <name>阿里云公共仓库</name>' \
+    '      <url>https://maven.aliyun.com/repository/public</url>' \
+    '    </mirror>' \
+    '  </mirrors>' \
+    '</settings>' > /home/jenkins/.m2/settings.xml && \
+    echo "Maven settings.xml configured with Aliyun mirror for user jenkins."
 
 # 验证安装
 RUN echo "Java version:" && java -version && \
