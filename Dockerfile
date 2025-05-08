@@ -80,6 +80,9 @@ RUN set -eux; \
     mvnd --version; \
     echo "mvnd installation complete."
 
+# Add jenkins user to docker group for DinD
+RUN usermod -aG docker jenkins
+
 # 切换回 jenkins 用户
 USER jenkins
 # Configure Maven settings.xml for Aliyun mirror for the jenkins user
