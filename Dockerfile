@@ -18,6 +18,8 @@ ENV JDK8_HOME=/opt/jdk-1.8
 # Add mvnd to PATH
 ENV PATH=/opt/mvnd/bin:$PATH
 
+ENV KUBECTL_VERSION=v1.14.5
+
 # 安装必要的工具 (wget, tar, etc.)
 # This layer installs tools required for downloading and extracting JDK and mvnd.
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -26,6 +28,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gzip \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
+
+
+RUN echo "deb http://mirrors.163.com/debian/ stretch main" > /etc/apt/sources.list && \
+    echo "deb http://mirrors.163.com/debian/ stretch-updates main non-free contrib" >> /etc/apt/sources.list && \
+    echo "deb http://mirrors.163.com/debian-security/ stretch/updates main non-free contrib" >> /etc/apt/sources.list
+RUN apt-get update && \
+    apt-get -y install apt-transport-https ca-certificates curl software-properties-common && \
+    curl -fsSL http://mirrors.aliyun.com/docker-ce/linux/debian/gpg | apt-key add - && \
+    add-apt-repository "deb [arch=amd64] http://mirrors.aliyun.com/docker-ce/linux/debian $(lsb_release -cs) stable" && \
+    apt-get -y update && \
+    apt-get -y install docker-ce
+RUN curl -L https://www.cnrancher.com/download/kubernetes/linux-amd64-${KUBECTL_VERSION}-kubectl -o /usr/local/bin/kubectl \
+    && chmod +x /usr/local/bin/kubectl
 
 # 安装 Adoptium JDK 1.8
 RUN set -eux; \
