@@ -13,12 +13,13 @@ ARG MVND_VERSION=1.0.2
 # ARG MVND_CHECKSUM has been removed as per user request to not check mvnd checksum.
 ARG MVND_URL=https://github.com/apache/maven-mvnd/releases/download/${MVND_VERSION}/maven-mvnd-${MVND_VERSION}-linux-amd64.tar.gz
 
+ARG KUBECTL_VERSION=v1.18.20
+ARG KUBECTL_URL=https://www.cnrancher.com/download/kubernetes/linux-amd64-${KUBECTL_VERSION}-kubectl
+
 # ENV JAVA_HOME is inherited from base image (JDK 17)
 ENV JDK8_HOME=/opt/jdk-1.8
 # Add mvnd to PATH
 ENV PATH=/opt/mvnd/bin:$PATH
-
-ENV KUBECTL_VERSION=v1.18.20
 
 # 安装必要的工具 (wget, tar, etc.)
 # This layer installs tools required for downloading and extracting JDK and mvnd.
@@ -27,17 +28,26 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     tar \
     gzip \
     ca-certificates \
-    apt-transport-https curl software-properties-common 
+    apt-transport-https \
+    curl \
+    gnupg \
+    lsb-release \
+    software-properties-common
 
 # Install Docker CE (ensure this is compatible with Debian Bullseye)
-RUN curl -fsSL http://mirrors.aliyun.com/docker-ce/linux/debian/gpg | apt-key add - && \
-    add-apt-repository "deb [arch=amd64] http://mirrors.aliyun.com/docker-ce/linux/debian $(lsb_release -cs) stable" && \
+# Install Docker CE using recommended method
+RUN mkdir -p /etc/apt/keyrings && \
+    curl -fsSL http://mirrors.aliyun.com/docker-ce/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
+    chmod a+r /etc/apt/keyrings/docker.gpg && \
+    echo \
+      "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] http://mirrors.aliyun.com/docker-ce/linux/debian \
+      $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null && \
     apt-get -y update && \
-    apt-get -y install docker-ce \
-    && rm -rf /var/lib/apt/lists/*
+    apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin && \
+    rm -rf /var/lib/apt/lists/*
 
 # Install kubectl
-RUN curl -L https://www.cnrancher.com/download/kubernetes/linux-amd64-${KUBECTL_VERSION}-kubectl -o /usr/local/bin/kubectl \
+RUN curl -L ${KUBECTL_URL} -o /usr/local/bin/kubectl \
     && chmod +x /usr/local/bin/kubectl
 
 # 安装 Adoptium JDK 1.8
