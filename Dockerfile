@@ -80,6 +80,11 @@ RUN set -eux; \
     mvnd --version; \
     echo "mvnd installation complete."
 
+
+# stat -c '%g' /var/run/docker.sock
+ARG DOCKER_HOST_GID=2375
+RUN groupadd -g ${DOCKER_HOST_GID} docker || true # 如果组已存在则忽略错误
+
 # Add jenkins user to docker group for DinD
 RUN usermod -aG docker jenkins
 
