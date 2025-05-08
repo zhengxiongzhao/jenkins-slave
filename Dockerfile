@@ -27,25 +27,32 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# 安装 Adoptium JDK 1.8 和 Apache mvnd
-# This single RUN command installs both JDK 8 and mvnd to reduce image layers.
+# 安装 Adoptium JDK 1.8
 RUN set -eux; \
-    # --- JDK 1.8 Installation ---
     echo "Installing Adoptium JDK ${JDK_VERSION} to ${JDK8_HOME}..."; \
     mkdir -p ${JDK8_HOME}; \
     wget -q -O /tmp/openjdk.tar.gz ${JDK_URL}; \
     echo "Verifying JDK 8 checksum (${JDK_CHECKSUM})..."; \
     echo "${JDK_CHECKSUM}  /tmp/openjdk.tar.gz" | sha256sum -c -; \
+    echo "Extracting JDK 8 to ${JDK8_HOME}..."; \
     tar -xzf /tmp/openjdk.tar.gz -C ${JDK8_HOME} --strip-components=1; \
     rm -f /tmp/openjdk.tar.gz; \
+    echo "Listing contents of ${JDK8_HOME}/bin:"; \
+    ls -lA ${JDK8_HOME}/bin; \
+    echo "Checking file type of ${JDK8_HOME}/bin/java:"; \
+    file ${JDK8_HOME}/bin/java; \
+    echo "Checking file type of ${JDK8_HOME}/bin/javac:"; \
+    file ${JDK8_HOME}/bin/javac; \
     echo "Ensuring JDK 8 binaries are executable..."; \
     chmod +x ${JDK8_HOME}/bin/java ${JDK8_HOME}/bin/javac; \
     echo "Verifying JDK 8 installation (${JDK8_HOME}/bin/java -version):"; \
     ${JDK8_HOME}/bin/java -version; \
+    echo "Verifying JDK 8 javac installation (${JDK8_HOME}/bin/javac -version):"; \
     ${JDK8_HOME}/bin/javac -version; \
-    echo "JDK 1.8 installation complete."; \
-    \
-    # --- Apache mvnd Installation ---
+    echo "JDK 1.8 installation complete."
+
+# 安装 Apache mvnd
+RUN set -eux; \
     echo "Installing Apache mvnd ${MVND_VERSION} to /opt/mvnd..."; \
     mkdir -p /opt/mvnd; \
     wget -q -O /tmp/mvnd.tar.gz ${MVND_URL}; \
