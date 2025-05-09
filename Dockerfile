@@ -94,7 +94,7 @@ USER jenkins
 RUN mkdir  .docker .yarn .npm 
 
 # Config Go env configured with cn mirror for user jenkins.
-RUN -p .config/go/ && \
+RUN mkdir -p .config/go/ && \
     printf '%s\n' \
     'GO111MODULE=on'\
     'GOPROXY=https://goproxy.cn' \
