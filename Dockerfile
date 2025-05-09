@@ -25,6 +25,7 @@ ENV PATH=/opt/mvnd/bin:$PATH
 # This layer installs tools required for downloading and extracting JDK and mvnd.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
+    vim \
     tar \
     gzip \
     ca-certificates \
