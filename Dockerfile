@@ -90,6 +90,17 @@ RUN usermod -aG docker jenkins
 
 # 切换回 jenkins 用户
 USER jenkins
+
+RUN mkdir  .docker .yarn .npm 
+
+# Config Go env configured with cn mirror for user jenkins.
+RUN -p .config/go/ && \
+    printf '%s\n' \
+    'GO111MODULE=on'\
+    'GOPROXY=https://goproxy.cn' \
+    > /home/jenkins/.config/go/env && \
+    echo "Go env configured with cn mirror for user jenkins."
+
 # Configure Maven settings.xml for Aliyun mirror for the jenkins user
 RUN mkdir -p /home/jenkins/.m2 && \
     printf '%s\n' \
