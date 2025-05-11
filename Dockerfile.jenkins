@@ -1,0 +1,69 @@
+FROM jenkins/jenkins:lts-jdk17
+
+USER root
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    wget \
+    vim \
+    tar \
+    gzip \
+    ca-certificates \
+    apt-transport-https \
+    curl \
+    gnupg \
+    gnupg2 \
+    lsb-release \
+    software-properties-common
+
+# Install Docker
+RUN set -eux; \
+    echo "正在使用 get.docker.com 脚本安装 Docker CE..." && \
+    curl -fsSL https://get.docker.com/ | sh && \
+    echo "Docker CE 安装完成。"
+
+# 清理不再需要的软件包和缓存（可选，有助于减小镜像大小）
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+
+ARG JDK_URL=https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u452-b09/OpenJDK8U-jdk_x64_linux_hotspot_8u452b09.tar.gz
+ENV JDK8_HOME=/opt/jdk-1.8
+
+ARG MVND_VERSION=1.0.2
+ENV MVND_HOME=/opt/mvnd
+ARG MVND_URL=https://github.com/apache/maven-mvnd/releases/download/${MVND_VERSION}/maven-mvnd-${MVND_VERSION}-linux-amd64.tar.gz
+
+RUN set -eux; \
+    mkdir -p ${JDK8_HOME}; \
+    wget -q -O /tmp/jdk.tar.gz ${JDK_URL}; \
+    tar -xzf /tmp/jdk.tar.gz -C ${JDK8_HOME} --strip-components=1; \ 
+    rm -f /tmp/jdk.tar.gz
+
+RUN set -eux; \
+    mkdir -p ${MVND_HOME}; \
+    wget -q -O /tmp/mvnd.tar.gz ${MVND_URL}; \
+    tar -xzf /tmp/mvnd.tar.gz -C ${MVND_HOME} --strip-components=1; \
+    rm -f /tmp/mvnd.tar.gz
+
+# Configure Maven settings.xml for Aliyun mirror for the jenkins user
+RUN printf '%s\n' \
+    '<settings xmlns="http://maven.apache.org/SETTINGS/1.2.0"' \
+    '          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"' \
+    '          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.2.0 https://maven.apache.org/xsd/settings-1.2.0.xsd">' \
+    '  <localRepository>/home/jenkins/.m2/repository</localRepository>' \
+    '  <mirrors>' \
+    '    <mirror>' \
+    '      <id>aliyunmaven</id>' \
+    '      <mirrorOf>*</mirrorOf>' \
+    '      <name>阿里云公共仓库</name>' \
+    '      <url>https://maven.aliyun.com/repository/public</url>' \
+    '    </mirror>' \
+    '  </mirrors>' \
+    '</settings>' > /opt/mvnd/mvn/conf/settings.xml && \
+    echo "Maven settings.xml configured with Aliyun mirror for user jenkins."
+
+ENV PATH=/opt/mvnd/mvn/bin:$PATH
+
+# Configure Docker to run as non-root user
+RUN groupadd docker || true
+RUN usermod -aG docker jenkins
+
+USER jenkins
