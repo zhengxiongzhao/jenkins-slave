@@ -94,6 +94,24 @@ USER jenkins
 
 RUN mkdir  .docker .yarn .npm 
 
+# Config NPM env configured with cn mirror for user jenkins.
+RUN printf '%s\n' \
+    'registry=https://registry.npmmirror.com/'\
+    'strict-ssl=false' \
+    > /home/jenkins/.npmrc
+
+# Config YARN env configured with cn mirror for user jenkins.
+RUN printf '%s\n' \
+    'registry "https://registry.npmmirror.com/"'\
+    'strict-ssl false' \
+    > /home/jenkins/.yarnrc 
+
+# Config YARN 2.0 env configured with cn mirror for user jenkins.
+RUN printf '%s\n' \
+    'npmRegistryServer: "https://registry.npmmirror.com/"'\
+    'strictSsl: false' \
+    > /home/jenkins/.yarnrc.yml
+
 # Config Go env configured with cn mirror for user jenkins.
 RUN mkdir -p .config/go/ && \
     printf '%s\n' \
