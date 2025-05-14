@@ -32,6 +32,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     apt-transport-https \
     curl \
     gnupg \
+    expect \
     lsb-release \
     software-properties-common
 
