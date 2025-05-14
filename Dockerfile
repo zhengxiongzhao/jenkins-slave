@@ -93,24 +93,41 @@ RUN usermod -aG docker jenkins
 # 切换回 jenkins 用户
 USER jenkins
 
-RUN mkdir  .docker .yarn .npm 
+RUN mkdir .docker .yarn .npm 
+
+RUN mkdir -p /data/cache/{docker,npm,yarn,go,mvn}
+RUN mkdir -p /data/cache/go/{mod-cache,cache}
+
+# Config docker data.
+RUN printf '%s\n' \
+    '{' \
+    '   "data-root": "/data/cache/docker",' \
+    '   "registry-mirrors": [' \
+    '       "https://docker.1ms.run",' \
+    '       "https://docker.m.daocloud.io"' \
+    '    ]' \
+    '}' \
+    > /data/cache/docker/daemon.json
 
 # Config NPM env configured with cn mirror for user jenkins.
 RUN printf '%s\n' \
     'registry=https://registry.npmmirror.com/'\
     'strict-ssl=false' \
+    'cache=/data/cache/npm' \
     > /home/jenkins/.npmrc
 
 # Config YARN env configured with cn mirror for user jenkins.
 RUN printf '%s\n' \
     'registry "https://registry.npmmirror.com/"'\
     'strict-ssl false' \
+    'cache-folder "/data/cache/yarn"' \
     > /home/jenkins/.yarnrc 
 
 # Config YARN 2.0 env configured with cn mirror for user jenkins.
 RUN printf '%s\n' \
     'npmRegistryServer: "https://registry.npmmirror.com/"'\
     'strictSsl: false' \
+    'cache-folder: "/data/cache/yarn"' \
     > /home/jenkins/.yarnrc.yml
 
 # Config Go env configured with cn mirror for user jenkins.
@@ -118,6 +135,8 @@ RUN mkdir -p .config/go/ && \
     printf '%s\n' \
     'GO111MODULE=on'\
     'GOPROXY=https://goproxy.cn' \
+    'GOMODCACHE=/data/cache/go/mod-cache' \
+    'GOCACHE=/data/cache/go/cache' \
     > /home/jenkins/.config/go/env && \
     echo "Go env configured with cn mirror for user jenkins."
 
@@ -127,7 +146,7 @@ RUN mkdir -p /home/jenkins/.m2 && \
     '<settings xmlns="http://maven.apache.org/SETTINGS/1.2.0"' \
     '          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"' \
     '          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.2.0 https://maven.apache.org/xsd/settings-1.2.0.xsd">' \
-    '  <localRepository>/home/jenkins/.m2/repository</localRepository>' \
+    '  <localRepository>/data/cache/mvn</localRepository>' \
     '  <mirrors>' \
     '    <mirror>' \
     '      <id>aliyunmaven</id>' \
