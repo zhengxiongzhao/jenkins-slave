@@ -31,6 +31,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     apt-transport-https \
     curl \
+    bash \
     gnupg \
     expect \
     lsb-release \
@@ -95,8 +96,8 @@ USER jenkins
 
 RUN mkdir .docker .yarn .npm 
 
-RUN mkdir -p /data/cache/{docker,npm,yarn,go,mvn}
-RUN mkdir -p /data/cache/go/{mod-cache,cache}
+RUN /bin/bash -c "mkdir -p /data/cache/{docker,npm,yarn,go,mvn}"
+RUN /bin/bash -c "mkdir -p /data/cache/go/{mod-cache,cache}"
 
 # Config docker data.
 RUN printf '%s\n' \
