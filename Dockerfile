@@ -91,13 +91,14 @@ RUN groupadd -g ${DOCKER_HOST_GID} docker || true # 如果组已存在则忽略�
 # Add jenkins user to docker group for DinD
 RUN usermod -aG docker jenkins
 
+RUN /bin/bash -c "mkdir -p /data/cache/{docker,npm,yarn,go,mvn}"
+RUN /bin/bash -c "mkdir -p /data/cache/go/{mod-cache,cache}"
+RUN chown -R 1000:1000 /data/cache
+
 # 切换回 jenkins 用户
 USER jenkins
 
 RUN mkdir .docker .yarn .npm 
-
-RUN /bin/bash -c "mkdir -p /data/cache/{docker,npm,yarn,go,mvn}"
-RUN /bin/bash -c "mkdir -p /data/cache/go/{mod-cache,cache}"
 
 # Config docker data.
 RUN printf '%s\n' \
