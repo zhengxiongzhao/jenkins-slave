@@ -12,15 +12,6 @@ This repository provides a `Dockerfile` to build a custom Jenkins inbound agent.
 
 This setup is ideal for Jenkins jobs that require Docker build capabilities and benefit from pre-configured caches and mirrors for faster dependency resolution. The system's default Java is JDK 17 (from the base image).
 
-## Features
-
-*   Based on the official `jenkins/inbound-agent:latest-jdk17`.
-*   Includes Docker CLI and Docker Buildx.
-*   Includes a set of common command-line utilities.
-*   Pre-configured cache directories for NPM (`/data/cache/npm`), Yarn (`/data/cache/yarn`), Go (`/data/cache/go`), and Maven (`/data/cache/mvn`).
-*   NPM, Yarn, and Go are configured to use Chinese mirrors (`registry.npmmirror.com/` for NPM/Yarn, `goproxy.cn` for Go).
-*   Maven `settings.xml` for the `jenkins` user is pre-configured with Aliyun mirror.
-*   Automated builds and publishing to Docker Hub via GitHub Actions.
 
 ## Image Contents
 
