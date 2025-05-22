@@ -1,6 +1,6 @@
 # Custom Jenkins Inbound Agent with Docker CLI, Buildx, and Pre-configured Caches/Mirrors
 
-[![Publish Docker image to Docker Hub](https://github.com/zhengxiongzhao/jenkins-slave/actions/workflows/publish-docker-image.yml/badge.svg?event=push)](https://github.com/zhengxiongzhao/jenkins-slave/actions/workflows/publish-docker-image.yml)
+[![Publish Docker image to Docker Hub](https://github.com/zhengxiongzhao/jenkins-slave/actions/workflows/publish-docker-image.yml/badge.svg?event=push)](https://hub.docker.com/r/zhengxiongzhao/jenkins-slave)
 
 This repository provides a `Dockerfile` to build a custom Jenkins inbound agent. The agent is based on the official `jenkins/inbound-agent:latest-jdk17` and comes pre-installed with:
 
